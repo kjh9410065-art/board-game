@@ -65,7 +65,7 @@ function resolveTile(){
 }
 
 // 주사위를 굴리고 말을 이동시킵니다.
-function moveOneStep(done){if(pos>=tiles.length-1){done();return}pos++;draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(()=>{if(forced[pos]!==undefined){pos=forced[pos];draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='갈림길에 멈춰 연결길로 이동합니다.';setTimeout(done,450)}else done()},520)}
-rollBtn.onclick=()=>{if(rolling)return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);let shown=0;const timer=setInterval(()=>{shown=1+Math.floor(Math.random()*6);diceEl.textContent=shown},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;const next=()=>{if(steps<=0){turn++;resolveTile();if(phase==='board')rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next)};next()},500)};
+function moveOneStep(isLast,done){if(pos>=tiles.length-1){done();return}pos++;draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(()=>{if(isLast&&forced[pos]!==undefined){const from=pos;pos=forced[pos];draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='마지막 이동이 갈림길에 걸렸습니다. 연결된 옆길로 강제 이동합니다.';setTimeout(done,650)}else done()},520)}
+rollBtn.onclick=()=>{if(rolling||phase!=='board')return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);const timer=setInterval(()=>{diceEl.textContent=1+Math.floor(Math.random()*6)},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;const next=()=>{if(steps<=0){turn++;resolveTile();if(phase==='board')rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(steps===0,next)};next()},500)};
 
 draw();
