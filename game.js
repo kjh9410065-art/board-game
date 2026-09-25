@@ -16,7 +16,7 @@ for(let row=0;row<5;row++){
   }
 }
 
-// 갈림길에 도착하면 그 자리에서 멈추고, 다음 주사위부터 연결길을 탑니다.
+// 갈림길에 도착해 턴을 끝내면, 다음 주사위의 첫 이동만 연결길을 탑니다.
 const forced={6:9,15:18,22:25,31:34};
 let pos=0,turn=0,gold=100,hp=100,wave=1,rolling=false,phase='board';
 
@@ -38,9 +38,6 @@ function draw(){
  const p=tiles[pos];ctx.fillStyle='#f7d34b';ctx.beginPath();ctx.arc(p.x,p.y-38,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6e5511';ctx.lineWidth=3;ctx.stroke();
 }
 
-// 다음 이동 칸을 결정합니다.
-function getNextPos(){if(forced[pos]!==undefined)return forced[pos];if(pos<tiles.length-1)return pos+1;return pos}
-
 // 현재 칸의 효과를 적용합니다.
 function resolveTile(){
  const t=tiles[pos];tileInfo.textContent=t.name+' (칸 '+pos+')';
@@ -56,11 +53,14 @@ function resolveTile(){
 }
 
 // 주사위 결과만큼 한 칸씩 천천히 이동합니다.
-function moveOneStep(done){
+function moveOneStep(done,useBranchRoute){
  if(pos>=tiles.length-1){done();return}
- pos=getNextPos();draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(done,520)
+ // 이번 주사위가 시작될 때 갈림길에 있었을 경우에만 첫 이동에 연결길을 사용합니다.
+ if(useBranchRoute){pos=forced[pos];useBranchRoute=false}
+ else{pos++}
+ draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(()=>done(useBranchRoute),520)
 }
 
-rollBtn.onclick=()=>{if(rolling||phase!=='board')return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);const timer=setInterval(()=>{diceEl.textContent=1+Math.floor(Math.random()*6)},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;const next=()=>{if(steps<=0){turn++;resolveTile();if(phase==='board')rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next)};next()},500)};
+rollBtn.onclick=()=>{if(rolling||phase!=='board')return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);const timer=setInterval(()=>{diceEl.textContent=1+Math.floor(Math.random()*6)},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;let useBranchRoute=forced[pos]!==undefined;const next=(branchRoute)=>{if(steps<=0){turn++;resolveTile();if(phase==='board')rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next,branchRoute)};next(useBranchRoute)},500)};
 
 draw();
