@@ -30,7 +30,7 @@ const tiles=[
 
 // 갈림길에서 강제로 연결되는 다음 칸을 정의합니다.
 const forced={4:7,11:14,17:20};
-let pos=0,turn=0,gold=100,hp=100,wave=1,rolling=false;
+let pos=0,turn=0,gold=100,hp=100,wave=1,rolling=false,phase='board';
 
 // 칸의 색상과 아이콘을 반환합니다.
 function tileStyle(t){return{start:['#4c9a62','▶'],hunt:['#a95151','⚔'],key:['#c59b32','🔑'],upgrade:['#7656b5','⚒'],merchant:['#3c79ad','🛒'],gamble:['#9a4c91','🎲'],branch:['#526d7e','↘'],end:['#bd6b35','🏰']}[t.type]}
@@ -60,12 +60,12 @@ function resolveTile(){
  if(t.type==='merchant'){const cost=20;if(gold>=cost){gold-=cost;hp=Math.min(100,hp+25);text='상인에게서 방어 자원을 구매했습니다. 골드 -20 / 방어력 +25'}else{text='상인: 골드가 부족합니다.'}}
  if(t.type==='gamble'){const stake=15;if(gold<stake)text='도박: 골드가 부족합니다.';else if(Math.random()<.5){gold+=stake; text='도박 성공! 골드 +'+stake}else{gold-=stake; text='도박 실패! 골드 -'+stake}}
  if(t.type==='branch'){text='갈림길에 멈췄습니다. 연결길을 따라 강제로 이동합니다.';pos=forced[pos]}
- if(t.type==='end'){text='끝 지점 도착! 10턴이 끝나면 디펜스가 시작됩니다.'}
+ if(t.type==='end'){phase='defense';text='🏰 끝 지점 도착! 디펜스 웨이브 '+wave+'가 시작됩니다.';prepEl.style.width='100%';rollBtn.disabled=true}
  messageEl.textContent=text||'이동했습니다.';
 }
 
 // 주사위를 굴리고 말을 이동시킵니다.
 function moveOneStep(done){if(pos>=tiles.length-1){done();return}pos++;draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(()=>{if(forced[pos]!==undefined){pos=forced[pos];draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='갈림길에 멈춰 연결길로 이동합니다.';setTimeout(done,450)}else done()},520)}
-rollBtn.onclick=()=>{if(rolling)return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);let shown=0;const timer=setInterval(()=>{shown=1+Math.floor(Math.random()*6);diceEl.textContent=shown},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;const next=()=>{if(steps<=0){turn++;resolveTile();if(turn>=10){messageEl.textContent+=' 10턴 종료! 이제 디펜스 웨이브 '+wave+'가 시작됩니다.';prepEl.style.width='100%';rollBtn.disabled=true}else rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next)};next()},500)};
+rollBtn.onclick=()=>{if(rolling)return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);let shown=0;const timer=setInterval(()=>{shown=1+Math.floor(Math.random()*6);diceEl.textContent=shown},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;const next=()=>{if(steps<=0){turn++;resolveTile();if(phase==='board')rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next)};next()},500)};
 
 draw();
