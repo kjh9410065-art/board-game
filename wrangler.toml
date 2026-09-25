@@ -1,0 +1,6 @@
+name = "board-game"
+compatibility_date = "2026-09-25"
+
+[assets]
+directory = "."
+html_handling = "auto-trailing-slash"
