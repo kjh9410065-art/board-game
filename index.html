@@ -8,16 +8,18 @@
 <body>
 <div id="app">
   <header><div><h1>🎲 Dice Defense</h1><p>주사위로 이동하고, 끝 지점에 도착하면 디펜스가 시작됩니다.</p></div>
-  <div class="status"><span>💰 <b id="gold">100</b></span><span>❤️ <b id="hp">100</b></span><span>🎲 턴 <b id="turn">0</b></span></div></header>
+  <div class="status"><span>💰 <b id="gold">100</b></span><span>❤️ <b id="hp">100</b></span><span>⚔️ <b id="attack">0</b></span><span>🛡️ <b id="defense">0</b></span><span>🎯 <b id="evasion">0</b></span><span>🎲 턴 <b id="turn">0</b></span></div></header>
   <main>
     <section class="board-wrap"><canvas id="board" width="900" height="650"></canvas></section>
     <aside>
       <div class="card"><h2>현재 칸</h2><div id="tileInfo">출발점</div></div>
       <div class="card"><h2>주사위</h2><div id="dice" class="dice">?</div><button id="roll">주사위 굴리기</button><div id="message">게임을 시작하세요.</div></div>
-      <div class="card"><h2>다음 디펜스</h2><div>웨이브 <b id="wave">1</b></div><div class="bar"><i id="prep"></i></div><small>보드에서 얻는 모든 보상은 디펜스에서 사용됩니다.</small></div>
+      <div class="card"><h2>능력치</h2><div id="stats">공격력 0 · 방어력 0 · 회피력 0<br>치명타 확률 0% · 치명타 피해 0%</div></div>
+      <div class="card"><h2>다음 디펜스</h2><div>웨이브 <b id="wave">1</b></div><div class="bar"><i id="prep"></i></div><small>보드에서 얻은 모든 보상은 디펜스에서 사용됩니다.</small></div>
     </aside>
   </main>
 </div>
+<div id="modal" class="modal hidden"><div class="modal-box"><h2 id="modalTitle"></h2><div id="modalBody"></div><div id="modalActions"></div></div></div>
 <script src="game.js"></script>
 </body>
 </html>
