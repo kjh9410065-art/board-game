@@ -19,6 +19,8 @@ for(let col=0;col<8;col++){
 // 갈림길에 도착해 턴을 끝내면, 다음 주사위의 첫 이동만 연결길을 탑니다.
 const forced={6:9,15:18,22:25,31:34};
 let pos=0,turn=0,gold=100,hp=100,wave=1,rolling=false,phase='board';
+// 말의 현재 애니메이션 위치입니다.
+let playerX=tiles[0].x,playerY=tiles[0].y-38;
 
 // 칸의 색상과 아이콘을 반환합니다.
 function tileStyle(t){return{start:['#4c9a62','▶'],hunt:['#a95151','⚔'],key:['#c59b32','🔑'],upgrade:['#7656b5','⚒'],merchant:['#3c79ad','🛒'],gamble:['#9a4c91','🎲'],branch:['#526d7e','↘'],end:['#bd6b35','🏰']}[t.type]}
@@ -34,8 +36,8 @@ function draw(){
  ctx.strokeStyle='#bba26a';ctx.lineWidth=20;ctx.beginPath();for(const [a,b] of Object.entries(forced)){const A=tiles[+a],B=tiles[b];ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y)}ctx.stroke();
  // 모든 칸을 그립니다.
  tiles.forEach((t,i)=>{const s=tileStyle(t);ctx.fillStyle=s[0];ctx.beginPath();ctx.arc(t.x,t.y,29,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff9';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='22px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(s[1],t.x,t.y);ctx.font='11px Arial';ctx.fillText(String(i),t.x,t.y+45)});
- // 플레이어 말을 그립니다.
- const p=tiles[pos];ctx.fillStyle='#f7d34b';ctx.beginPath();ctx.arc(p.x,p.y-38,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6e5511';ctx.lineWidth=3;ctx.stroke();
+ // 애니메이션 중인 말의 실제 좌표를 그립니다.
+ ctx.fillStyle='#f7d34b';ctx.beginPath();ctx.arc(playerX,playerY,13,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#6e5511';ctx.lineWidth=3;ctx.stroke();
 }
 
 // 현재 칸의 효과를 적용합니다.
@@ -52,13 +54,34 @@ function resolveTile(){
  messageEl.textContent=text||'이동했습니다.';
 }
 
-// 주사위 결과만큼 한 칸씩 천천히 이동합니다.
+// 말이 다음 칸 위에서 아래로 떨어지듯 내려오는 애니메이션을 실행합니다.
+function dropToTile(nextPos,done){
+ const target=tiles[nextPos];
+ const startX=target.x;
+ const startY=target.y-105;
+ const endY=target.y-38;
+ const duration=420;
+ const started=performance.now();
+ function animate(now){
+   const progress=Math.min((now-started)/duration,1);
+   const eased=1-Math.pow(1-progress,3);
+   playerX=startX;
+   playerY=startY+(endY-startY)*eased;
+   draw();
+   if(progress<1)requestAnimationFrame(animate);
+   else{playerY=endY;draw();setTimeout(done,120)}
+ }
+ requestAnimationFrame(animate);
+}
+
+// 주사위 결과만큼 한 칸씩 이동하며 각 칸마다 위에서 내려옵니다.
 function moveOneStep(done,useBranchRoute){
- if(pos>=tiles.length-1){done();return}
- // 이번 주사위가 시작될 때 갈림길에 있었을 경우에만 첫 이동에 연결길을 사용합니다.
+ if(pos>=tiles.length-1){done(useBranchRoute);return}
+ // 갈림길에서 시작한 경우 첫 칸만 연결길을 사용합니다.
  if(useBranchRoute){pos=forced[pos];useBranchRoute=false}
  else{pos++}
- draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(()=>done(useBranchRoute),520)
+ tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 내려오는 중...';
+ dropToTile(pos,()=>done(useBranchRoute));
 }
 
 rollBtn.onclick=()=>{if(rolling||phase!=='board')return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);const timer=setInterval(()=>{diceEl.textContent=1+Math.floor(Math.random()*6)},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;let useBranchRoute=forced[pos]!==undefined;const next=(branchRoute)=>{if(steps<=0){turn++;resolveTile();if(phase==='board')rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next,branchRoute)};next(useBranchRoute)},500)};
