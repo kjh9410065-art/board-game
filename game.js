@@ -65,6 +65,7 @@ function resolveTile(){
 }
 
 // 주사위를 굴리고 말을 이동시킵니다.
-rollBtn.onclick=()=>{if(rolling)return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);let shown=0;const timer=setInterval(()=>{shown=1+Math.floor(Math.random()*6);diceEl.textContent=shown},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;for(let i=0;i<n;i++){if(pos<tiles.length-1)pos++;}turn++;resolveTile();if(turn>=10){messageEl.textContent+=' 10턴 종료! 이제 디펜스 웨이브 '+wave+'가 시작됩니다.';prepEl.style.width='100%';rollBtn.disabled=true}else{rollBtn.disabled=false}turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;draw();rolling=false},500)};
+function moveOneStep(done){if(pos>=tiles.length-1){done();return}pos++;draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='말이 '+tiles[pos].name+' 칸으로 이동 중...';setTimeout(()=>{if(forced[pos]!==undefined){pos=forced[pos];draw();tileInfo.textContent=tiles[pos].name+' (칸 '+pos+')';messageEl.textContent='갈림길에 멈춰 연결길로 이동합니다.';setTimeout(done,450)}else done()},520)}
+rollBtn.onclick=()=>{if(rolling)return;rolling=true;rollBtn.disabled=true;const n=1+Math.floor(Math.random()*6);let shown=0;const timer=setInterval(()=>{shown=1+Math.floor(Math.random()*6);diceEl.textContent=shown},70);setTimeout(()=>{clearInterval(timer);diceEl.textContent=n;let steps=n;const next=()=>{if(steps<=0){turn++;resolveTile();if(turn>=10){messageEl.textContent+=' 10턴 종료! 이제 디펜스 웨이브 '+wave+'가 시작됩니다.';prepEl.style.width='100%';rollBtn.disabled=true}else rollBtn.disabled=false;turnEl.textContent=turn;goldEl.textContent=gold;hpEl.textContent=hp;rolling=false;return}steps--;moveOneStep(next)};next()},500)};
 
 draw();
