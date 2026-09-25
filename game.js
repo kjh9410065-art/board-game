@@ -1,13 +1,13 @@
 const canvas=document.getElementById('board');const ctx=canvas.getContext('2d');const rollBtn=document.getElementById('roll');const diceEl=document.getElementById('dice');const messageEl=document.getElementById('message');const tileInfo=document.getElementById('tileInfo');const goldEl=document.getElementById('gold');const hpEl=document.getElementById('hp');const turnEl=document.getElementById('turn');const waveEl=document.getElementById('wave');const prepEl=document.getElementById('prep');
 
-// 40칸짜리 지그재그 메인 경로를 만듭니다.
+// 40칸짜리 지그재그 경로를 위에서 아래로 내려가도록 만듭니다.
 const types=['hunt','key','merchant','gamble','upgrade','hunt','branch','key'];
 const tiles=[];
-for(let row=0;row<5;row++){
-  const y=90+row*120;
-  for(let col=0;col<8;col++){
-    const index=row*8+col;
-    const x=row%2===0?90+col*100:790-col*100;
+for(let col=0;col<8;col++){
+  for(let row=0;row<5;row++){
+    const index=col*5+row;
+    const x=90+col*100;
+    const y=col%2===0?90+row*120:570-row*120;
     let type=types[index%types.length];
     let name={hunt:'사냥',key:'황금열쇠',merchant:'상인',gamble:'도박',upgrade:'강화',branch:'갈림길'}[type];
     if(index===0){type='start';name='출발'}
@@ -28,7 +28,7 @@ function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);
  ctx.fillStyle='#6fa64c';ctx.fillRect(0,0,canvas.width,canvas.height);
  for(let i=0;i<100;i++){ctx.fillStyle=i%2?'#6aa047':'#74ad50';ctx.beginPath();ctx.arc((i*113)%900,(i*71)%650,2,0,Math.PI*2);ctx.fill()}
- // 메인 지그재그 경로를 연결합니다.
+ // 메인 경로를 위에서 아래로 내려가며 좌우로 지그재그 연결합니다.
  ctx.strokeStyle='#e1c47d';ctx.lineWidth=42;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(tiles[0].x,tiles[0].y);for(let i=1;i<tiles.length;i++)ctx.lineTo(tiles[i].x,tiles[i].y);ctx.stroke();
  // 갈림길 연결길을 별도로 표시합니다.
  ctx.strokeStyle='#bba26a';ctx.lineWidth=20;ctx.beginPath();for(const [a,b] of Object.entries(forced)){const A=tiles[+a],B=tiles[b];ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y)}ctx.stroke();
