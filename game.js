@@ -94,15 +94,22 @@ function startKey(){
  const names=['attack','defense','evasion','crit','critDamage'],labels={attack:'공격력',defense:'방어력',evasion:'회피력',crit:'크리티컬 확률',critDamage:'크리티컬 데미지'};
  const stat=names[Math.floor(Math.random()*names.length)],isBuff=Math.random()<0.5,value=1+Math.floor(Math.random()*2),sign=isBuff?1:-1;
  const apply=m=>stats[stat]+=sign*value*m;
- showModal('🔑 황금열쇠','효과를 확인하시겠습니까?<p>효과를 확인하지 않고 광고를 보면 히든 기믹이 발동합니다.</p>',[
-  {text:'효과 확인',className:'secondary',onClick:()=>showModal('🔑 황금열쇠 효과','<div class="reward">'+(isBuff?'버프 ':'디버프 ')+labels[stat]+' '+(sign>0?'+':'-')+value+'</div><p>광고를 보면 효과가 2배입니다.</p>',[
+ const effectText=m=>'<div class="reward">'+(isBuff?'버프 ':'디버프 ')+labels[stat]+' '+(sign>0?'+':'-')+(value*m)+'</div>';
+ const revealEffect=()=>showModal('🔑 황금열쇠 효과',effectText(1)+'<p>'+(isBuff?'광고를 보면 효과가 2배입니다.':'디버프입니다. 광고를 보면 효과를 막을 수 있습니다.')+'</p>',
+  isBuff?[
    {text:'기본 적용',className:'secondary',onClick:()=>{apply(1);closeModal();finishEvent()}},
    {text:'광고 보고 2배',onClick:()=>{apply(2);closeModal();finishEvent()}}
-  ] )},
-  {text:'효과 안 보고 광고',onClick:()=>{apply(3);messageEl.textContent='히든 기믹 발동! 효과 3배!';closeModal();finishEvent()}}
+  ]:[
+   {text:'디버프 적용',className:'secondary',onClick:()=>{apply(1);closeModal();finishEvent()}},
+   {text:'광고 보고 막기',onClick:()=>{messageEl.textContent='광고로 디버프를 막았습니다.';closeModal();finishEvent()}}
+  ]);
+ showModal('🔑 황금열쇠','효과를 확인하시겠습니까?<p>효과를 확인하지 않고 광고를 먼저 보면 히든 기믹이 발동합니다. 광고 시청 후 효과가 공개되며 효과가 3배 적용됩니다.</p>',[
+  {text:'효과 확인',className:'secondary',onClick:revealEffect},
+  {text:'광고 먼저 보기',onClick:()=>{apply(3);showModal('🔑 황금열쇠 효과','<p>광고 시청 완료! 히든 기믹이 발동했습니다.</p>'+effectText(3),[
+   {text:'효과 확인',onClick:()=>{messageEl.textContent='히든 기믹 발동! 효과 3배!';closeModal();finishEvent()}}
+  ])}}
  ])
 }
-
 // 강화는 5종 능력치 중 1~5종을 랜덤 선택합니다.
 function startUpgrade(){const names=['attack','defense','evasion','crit','critDamage'],labels={attack:'공격력',defense:'방어력',evasion:'회피력',crit:'크리티컬 확률',critDamage:'크리티컬 데미지'};const count=1+Math.floor(Math.random()*5);const chosen=[...names].sort(()=>Math.random()-0.5).slice(0,count);const apply=m=>chosen.forEach(k=>stats[k]+=m);showModal('⚒ 강화','선택된 능력치 '+count+'종:<div class="reward">'+chosen.map(k=>labels[k]+' +1').join('<br>')+'</div><p>광고를 보면 선택된 능력치가 각각 +2 증가합니다.</p>',[
  {text:'기본 +1',className:'secondary',onClick:()=>{apply(1);closeModal();finishEvent()}},
